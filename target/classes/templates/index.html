@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Algoritmo de Dijkstra</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            background:#f5f5f5;
+        }
+
+        .contenedor{
+            width:500px;
+            margin:50px auto;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 0 10px gray;
+        }
+
+        h1{
+            text-align:center;
+            color:#1d3557;
+        }
+
+        label{
+            font-weight:bold;
+        }
+
+        input{
+            width:100%;
+            padding:10px;
+            margin-top:5px;
+            margin-bottom:20px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            background:#1d3557;
+            color:white;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+        }
+
+        button:hover{
+            background:#457b9d;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="contenedor">
+
+<h1>Algoritmo de Dijkstra</h1>
+
+<form th:action="@{/calcular}" method="post">
+
+<label>Nodo Inicial</label>
+
+<input
+type="text"
+name="inicio"
+placeholder="Ejemplo: A"
+required>
+
+<label>Nodo Destino</label>
+
+<input
+type="text"
+name="fin"
+placeholder="Ejemplo: F"
+required>
+
+<button type="submit">
+
+Calcular Camino Más Corto
+
+</button>
+
+</form>
+
+</div>
+
+</body>
+
+</html>
