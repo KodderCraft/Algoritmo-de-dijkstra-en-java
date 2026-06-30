@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/dijkstra")
+@RequestMapping("/index")
 public class DijkstraControllerSimple {
 
     private Grafo grafo = new Grafo();
