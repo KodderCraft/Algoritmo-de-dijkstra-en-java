@@ -1,0 +1,166 @@
+package com.Utc.AppDijkstra.controller;
+
+import com.Utc.AppDijkstra.dto.request.AgregarAristaRequestDTO;
+import com.Utc.AppDijkstra.dto.request.AgregarNodoRequestDTO;
+import com.Utc.AppDijkstra.dto.request.CalcularCaminoRequestDTO;
+import com.Utc.AppDijkstra.dto.response.ApiResponseDTO;
+import com.Utc.AppDijkstra.dto.response.CalcularCaminoResponseDTO;
+import com.Utc.AppDijkstra.dto.response.DistanciasResponseDTO;
+import com.Utc.AppDijkstra.dto.response.GrafoInfoResponseDTO;
+import com.Utc.AppDijkstra.service.DijkstraService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Controlador REST para los endpoints del algoritmo de Dijkstra
+ */
+@RestController
+@RequestMapping("/api/dijkstra")
+@Tag(name = "Dijkstra", description = "API para el cálculo de rutas más cortas usando algoritmo de Dijkstra")
+public class DijkstraController {
+
+    @Autowired
+    private DijkstraService dijkstraService;
+
+    // ===== ENDPOINTS DE GESTIÓN DEL GRAFO =====
+
+    /**
+     * Crea un nuevo grafo (reinicia el actual)
+     */
+    @PostMapping("/grafo/crear")
+    @Operation(summary = "Crear un nuevo grafo", description = "Reinicia el grafo actual y crea uno vacío")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Grafo creado exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<ApiResponseDTO<String>> crearGrafo() {
+        dijkstraService.crearGrafo();
+        return ResponseEntity.ok(new ApiResponseDTO<>(
+                true,
+                "Grafo creado exitosamente",
+                "OK"
+        ));
+    }
+
+    /**
+     * Agrega un nuevo nodo al grafo
+     */
+    @PostMapping("/grafo/nodo")
+    @Operation(summary = "Agregar un nodo al grafo", description = "Agrega un nuevo nodo con el nombre especificado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Nodo agregado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Error de validación o nodo duplicado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<ApiResponseDTO<String>> agregarNodo(
+            @Valid @RequestBody AgregarNodoRequestDTO request) {
+        dijkstraService.agregarNodo(request.getNombre());
+        return ResponseEntity.ok(new ApiResponseDTO<>(
+                true,
+                "Nodo '" + request.getNombre() + "' agregado correctamente",
+                request.getNombre()
+        ));
+    }
+
+    /**
+     * Agrega una arista entre dos nodos
+     */
+    @PostMapping("/grafo/arista")
+    @Operation(summary = "Agregar una arista al grafo", description = "Agrega una arista dirigida con peso entre dos nodos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Arista agregada correctamente"),
+            @ApiResponse(responseCode = "400", description = "Error de validación o nodos inexistentes"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<ApiResponseDTO<String>> agregarArista(
+            @Valid @RequestBody AgregarAristaRequestDTO request) {
+        dijkstraService.agregarArista(request.getOrigen(), request.getDestino(), request.getPeso());
+        return ResponseEntity.ok(new ApiResponseDTO<>(
+                true,
+                "Arista " + request.getOrigen() + " → " + request.getDestino() + 
+                        " (peso: " + request.getPeso() + ") agregada correctamente",
+                request.getOrigen() + "-" + request.getDestino()
+        ));
+    }
+
+    /**
+     * Obtiene información del grafo actual
+     */
+    @GetMapping("/grafo/info")
+    @Operation(summary = "Obtener información del grafo", description = "Retorna todos los nodos y aristas del grafo actual")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Información del grafo obtenida"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<GrafoInfoResponseDTO> obtenerInfoGrafo() {
+        GrafoInfoResponseDTO info = dijkstraService.obtenerInfoGrafo();
+        return ResponseEntity.ok(info);
+    }
+
+    /**
+     * Limpia el grafo (lo reinicia)
+     */
+    @DeleteMapping("/grafo/limpiar")
+    @Operation(summary = "Limpiar el grafo", description = "Elimina todos los nodos y aristas del grafo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Grafo limpiado correctamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<ApiResponseDTO<String>> limpiarGrafo() {
+        dijkstraService.limpiarGrafo();
+        return ResponseEntity.ok(new ApiResponseDTO<>(
+                true,
+                "Grafo limpiado correctamente",
+                "OK"
+        ));
+    }
+
+    // ===== ENDPOINTS DE CÁLCULO =====
+
+    /**
+     * Calcula el camino más corto entre dos nodos
+     */
+    @PostMapping("/calcular")
+    @Operation(summary = "Calcular camino más corto", description = "Calcula el camino más corto entre dos nodos usando el algoritmo de Dijkstra")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cálculo realizado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Error de validación o nodos no existen"),
+            @ApiResponse(responseCode = "404", description = "Nodo no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<CalcularCaminoResponseDTO> calcularCamino(
+            @Valid @RequestBody CalcularCaminoRequestDTO request) {
+        CalcularCaminoResponseDTO resultado = dijkstraService.calcularCaminoMasCorto(
+                request.getNodoOrigen(),
+                request.getNodoDestino()
+        );
+        return ResponseEntity.ok(resultado);
+    }
+
+    /**
+     * Obtiene todas las distancias desde un nodo origen
+     */
+    @GetMapping("/distancias/{nodo}")
+    @Operation(summary = "Obtener distancias desde un nodo", 
+            description = "Calcula y retorna las distancias mínimas desde un nodo hacia todos los demás")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Distancias calculadas correctamente"),
+            @ApiResponse(responseCode = "400", description = "Grafo vacío o error de validación"),
+            @ApiResponse(responseCode = "404", description = "Nodo no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<DistanciasResponseDTO> obtenerDistancias(
+            @PathVariable String nodo) {
+        DistanciasResponseDTO resultado = dijkstraService.obtenerDistancias(nodo);
+        return ResponseEntity.ok(resultado);
+    }
+}
