@@ -18,7 +18,7 @@ public class Grafo {
         listaAdyacencia.putIfAbsent(nodo, new ArrayList<>());
     }
 
-    // Agrega una arista entre dos nodos
+    // Agrega una arista entre dos nodos en ambos sentidos
     public void agregarArista(Nodo origen, Nodo destino, int peso) {
 
         if (!listaAdyacencia.containsKey(origen)) {
@@ -30,6 +30,7 @@ public class Grafo {
         }
 
         listaAdyacencia.get(origen).add(new Arista(destino, peso));
+        listaAdyacencia.get(destino).add(new Arista(origen, peso));
     }
 
     // Devuelve toda la lista de adyacencia
