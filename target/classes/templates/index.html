@@ -403,6 +403,19 @@ canvas{
             nodoSeleccionado = nodo;
             nodoArrastrado = nodo;
             evento.currentTarget.style.cursor = 'grabbing';
+        } else {
+            ocultarMenuNodo();
+        }
+    }
+
+    function manejarContextMenu(evento) {
+        const rect = evento.currentTarget.getBoundingClientRect();
+        const x = evento.clientX - rect.left;
+        const y = evento.clientY - rect.top;
+        const nodo = obtenerNodoEnCoordenadas(x, y);
+
+        if (nodo) {
+            evento.preventDefault();
             mostrarMenuNodo(nodo, x, y);
         } else {
             ocultarMenuNodo();
@@ -433,6 +446,7 @@ canvas{
     canvas.addEventListener('mousemove', manejarMouseMove);
     canvas.addEventListener('mouseup', manejarMouseUp);
     canvas.addEventListener('mouseleave', manejarMouseUp);
+    canvas.addEventListener('contextmenu', manejarContextMenu);
     canvas.style.cursor = 'grab';
 
     document.addEventListener('mousedown', (evento) => {
