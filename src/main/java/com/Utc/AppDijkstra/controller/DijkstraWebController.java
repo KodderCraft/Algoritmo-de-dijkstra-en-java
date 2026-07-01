@@ -89,6 +89,25 @@ public class DijkstraWebController {
         return "redirect:/";
     }
 
+    @PostMapping("/eliminar-nodo")
+    public String eliminarNodo(@RequestParam String nombre,
+                               RedirectAttributes redirectAttributes) {
+        Map<String, Nodo> nodos = new LinkedHashMap<>();
+        for (Nodo nodo : grafo.getListaAdyacencia().keySet()) {
+            nodos.put(nodo.getNombre(), nodo);
+        }
+
+        Nodo nodo = nodos.get(nombre.trim().toUpperCase());
+        if (nodo == null) {
+            redirectAttributes.addFlashAttribute("mensaje", "Nodo no encontrado");
+            return "redirect:/";
+        }
+
+        grafo.getListaAdyacencia().remove(nodo);
+        redirectAttributes.addFlashAttribute("mensaje", "Nodo eliminado: " + nombre);
+        return "redirect:/";
+    }
+
     @PostMapping("/renombrar-nodo")
     public String renombrarNodo(@RequestParam String nombreActual,
                                 @RequestParam String nuevoNombre,
@@ -157,13 +176,18 @@ public class DijkstraWebController {
         Grafo grafo = new Grafo();
         Map<String, Nodo> nodos = new LinkedHashMap<>();
 
-        for (String nombre : List.of("A", "B")) {
+        for (String nombre : List.of("A", "B" , "C", "D", "E")) {
             Nodo nodo = new Nodo(nombre);
             grafo.agregarNodo(nodo);
             nodos.put(nombre, nodo);
         }
 
         grafo.agregarArista(nodos.get("A"), nodos.get("B"), 4);
+        grafo.agregarArista(nodos.get("A"), nodos.get("C"), 2);
+        grafo.agregarArista(nodos.get("B"), nodos.get("C"), 3);
+        grafo.agregarArista(nodos.get("B"), nodos.get("D"), 3);
+        grafo.agregarArista(nodos.get("C"), nodos.get("D"), 6);
+        grafo.agregarArista(nodos.get("D"), nodos.get("E"), 1);
 
         return grafo;
     }
@@ -171,7 +195,7 @@ public class DijkstraWebController {
     private String generarNombreAleatorio() {
         Random random = new Random();
         String letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        return String.valueOf(letras.charAt(random.nextInt(letras.length()))) + random.nextInt(10);
+        return String.valueOf(letras.charAt(random.nextInt(letras.length())));
     }
 
     private List<String> obtenerNombres(Grafo grafo) {

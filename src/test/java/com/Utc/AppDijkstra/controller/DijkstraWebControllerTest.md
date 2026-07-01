@@ -6,6 +6,7 @@ import com.Utc.AppDijkstra.model.Nodo;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.List;
 import java.util.Map;
@@ -39,5 +40,17 @@ class DijkstraWebControllerTest {
         assertTrue(model.containsAttribute("mostrarModalResultado"));
         assertTrue(model.containsAttribute("camino"));
         assertEquals("A -> B", model.getAttribute("camino"));
+    }
+
+    @Test
+    void debeEliminarUnNodoDelGrafo() {
+        DijkstraWebController controller = new DijkstraWebController();
+        Model model = new ExtendedModelMap();
+
+        String vista = controller.eliminarNodo("A", new RedirectAttributesModelMap());
+
+        assertEquals("redirect:/", vista);
+        controller.mostrarFormulario(model);
+        assertFalse(((List<String>) model.getAttribute("nodos")).contains("A"));
     }
 }

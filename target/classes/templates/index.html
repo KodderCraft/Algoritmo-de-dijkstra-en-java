@@ -15,8 +15,11 @@
 
 .modal-backdrop {
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    width: 250px;
+    height: 200px;
+    bottom: 15px;
+    right: 0;
+    margin: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -24,9 +27,9 @@
 }
 
 .modal-card {
-    background: white;
-    width: min(90%, 420px);
-    border-radius: 12px;
+    background: rgb(255, 255, 255);
+   
+    border-radius: 7px;
     padding: 24px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
@@ -88,7 +91,7 @@ label{
     font-weight:bold;
 }
 
-input{
+input, select{
     width:100%;
     padding:10px;
     margin-bottom:15px;
@@ -142,6 +145,8 @@ canvas{
             
 
             <form th:action="@{/agregar-nodo}" method="post">
+                <label>Nombre del nodo</label>
+                <input type="text" name="nombre" placeholder="Ejemplo: A" >
 
                 <button type="submit">
                     Agregar Nodo
@@ -171,10 +176,16 @@ canvas{
             <form th:action="@{/agregar-arista}" method="post">
 
                 <label>Nodo Origen</label>
-                <input type="text" name="origen" placeholder="Ejemplo: A" required>
+                <select name="origen" required>
+                    <option value="">Selecciona un nodo</option>
+                    <option th:each="nodo : ${nodos}" th:value="${nodo}" th:text="${nodo}"></option>
+                </select>
 
                 <label>Nodo Destino</label>
-                <input type="text" name="destino" placeholder="Ejemplo: B" required>
+                <select name="destino" required>
+                    <option value="">Selecciona un nodo</option>
+                    <option th:each="nodo : ${nodos}" th:value="${nodo}" th:text="${nodo}"></option>
+                </select>
 
                 <label>Peso</label>
                 <input type="number" name="peso" min="1" placeholder="Ejemplo: 5" required>
@@ -195,10 +206,16 @@ canvas{
             <form th:action="@{/calcular}" method="post">
 
                 <label>Nodo Inicial</label>
-                <input type="text" name="inicio" placeholder="Ejemplo: A">
+                <select name="inicio" required>
+                    <option value="">Selecciona un nodo</option>
+                    <option th:each="nodo : ${nodos}" th:value="${nodo}" th:text="${nodo}"></option>
+                </select>
 
                 <label>Nodo Destino</label>
-                <input type="text" name="fin" placeholder="Ejemplo: F">
+                <select name="fin" required>
+                    <option value="">Selecciona un nodo</option>
+                    <option th:each="nodo : ${nodos}" th:value="${nodo}" th:text="${nodo}"></option>
+                </select>
 
                 <button type="submit">
                     Calcular Camino
@@ -212,9 +229,10 @@ canvas{
 
     <!-- Área de dibujo -->
     <div class="grafo">
-
+        <div id="nodeMenu" style="display:none; position:absolute; z-index:20; background:white; border:1px solid #ccc; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.15); padding:8px; min-width:140px;">
+            <button type="button" data-action="delete" style="margin-bottom:6px;">Eliminar nodo</button>
+        </div>
         <canvas id="canvas"></canvas>
-
     </div>
 
 </div>
@@ -252,6 +270,7 @@ canvas{
     let nodoArrastrado = null;
     let nodoSeleccionado = null;
     let posiciones = {};
+    let menuNodoActual = null;
 
     function cargarPosiciones() {
         try {
@@ -341,6 +360,40 @@ canvas{
         return null;
     }
 
+    function mostrarMenuNodo(nombre, x, y) {
+        const menu = document.getElementById('nodeMenu');
+        menuNodoActual = nombre;
+        menu.style.display = 'block';
+        menu.style.left = `${x + 10}px`;
+        menu.style.top = `${y + 10}px`;
+    }
+
+    function ocultarMenuNodo() {
+        document.getElementById('nodeMenu').style.display = 'none';
+        menuNodoActual = null;
+    }
+
+    function manejarAccionMenu(action) {
+        if (!menuNodoActual) return;
+        if (action === 'delete') {
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = '/eliminar-nodo';
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'nombre';
+            input.value = menuNodoActual;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
+        ocultarMenuNodo();
+    }
+
+    document.querySelectorAll('#nodeMenu button[data-action]').forEach(boton => {
+        boton.addEventListener('click', () => manejarAccionMenu(boton.getAttribute('data-action')));
+    });
+
     function manejarMouseDown(evento) {
         const rect = evento.currentTarget.getBoundingClientRect();
         const x = evento.clientX - rect.left;
@@ -348,10 +401,11 @@ canvas{
         const nodo = obtenerNodoEnCoordenadas(x, y);
         if (nodo) {
             nodoSeleccionado = nodo;
-            document.getElementById('nombreActual').value = nodo;
-            document.getElementById('nuevoNombre').focus();
             nodoArrastrado = nodo;
             evento.currentTarget.style.cursor = 'grabbing';
+            mostrarMenuNodo(nodo, x, y);
+        } else {
+            ocultarMenuNodo();
         }
     }
 
@@ -380,6 +434,14 @@ canvas{
     canvas.addEventListener('mouseup', manejarMouseUp);
     canvas.addEventListener('mouseleave', manejarMouseUp);
     canvas.style.cursor = 'grab';
+
+    document.addEventListener('mousedown', (evento) => {
+        const dentroMenu = evento.target.closest('#nodeMenu');
+        const dentroGrafo = evento.target.closest('.grafo');
+        if (!dentroMenu && !dentroGrafo) {
+            ocultarMenuNodo();
+        }
+    });
 
     window.addEventListener('resize', dibujarGrafo);
     window.addEventListener('load', dibujarGrafo);
