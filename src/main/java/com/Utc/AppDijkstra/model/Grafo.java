@@ -25,7 +25,7 @@ public class Grafo {
         listaAdyacencia.putIfAbsent(nodo, new ArrayList<>());
     }
 
-    // Agrega una arista entre dos nodos
+    // Agrega una arista entre dos nodos en ambos sentidos
     public void agregarArista(Nodo origen, Nodo destino, int peso) {
 
         if (!listaAdyacencia.containsKey(origen)) {
@@ -37,6 +37,7 @@ public class Grafo {
         }
 
         listaAdyacencia.get(origen).add(new Arista(destino, peso));
+        listaAdyacencia.get(destino).add(new Arista(origen, peso));
     }
 
     // Devuelve toda la lista de adyacencia
@@ -52,6 +53,17 @@ public class Grafo {
     // Verifica si existe un nodo
     public boolean existeNodo(Nodo nodo) {
         return listaAdyacencia.containsKey(nodo);
+    }
+    public void imprimirGrafo() {
+        for (Map.Entry<Nodo, List<Arista>> entry : listaAdyacencia.entrySet()) {
+            Nodo nodo = entry.getKey();
+            List<Arista> aristas = entry.getValue();
+            System.out.print("Nodo " + nodo.getNombre() + " -> ");
+            for (Arista arista : aristas) {
+                System.out.print(arista.getDestino().getNombre() + "(" + arista.getPeso() + ") ");
+            }
+            System.out.println();
+        }
     }
 
 }
