@@ -1,14 +1,21 @@
+//Declara el paquete. Esta clase también pertenece al "modelo",
 package com.Utc.AppDijkstra.model;
 
+//importar ArrayList, HashMap, List, Map 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Grafo {
+//Clase public Grafo
 
+public class Grafo {
+	
     private Map<Nodo, List<Arista>> listaAdyacencia;
 
+    // Constructor: al crear un nuevo Grafo, se inicializa la lista de
+    // adyacencia como un HashMap vacío, listo para empezar a agregar
+    // nodos y conexiones.
     public Grafo() {
         listaAdyacencia = new HashMap<>();
     }
